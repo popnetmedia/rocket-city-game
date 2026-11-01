@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+.env.local
+.vercel
+.DS_Store
+scores.local.json
+.env*
+promo-originals/
+
+# Python bytecode and Blender autosaves from the map build
+__pycache__/
+*.pyc
+*.blend1
+!.env.example

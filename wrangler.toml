@@ -1,0 +1,21 @@
+name = "rocket-city-relay"
+main = "server/do.js"
+compatibility_date = "2025-06-01"
+
+[dev]
+port = 8787
+
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "HuntsvilleRoom"
+
+[[durable_objects.bindings]]
+name = "SCORES"
+class_name = "ScoresRoom"
+
+# new_sqlite_classes, not new_classes: the free plan only allows SQLite-backed Durable
+# Objects, and a KV-backed namespace is rejected with error 10097. Once a class ships under
+# one backend it cannot be swapped; add a new migration tag with a fresh class name instead.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["HuntsvilleRoom", "ScoresRoom"]

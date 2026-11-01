@@ -1,0 +1,90 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITLE}}</title>
+<link rel="canonical" href="{{URL}}">
+<meta name="description" content="{{DESCRIPTION}}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Rocket City CC">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESCRIPTION}}">
+<meta property="og:url" content="{{URL}}">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#05070a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono&family=IBM+Plex+Sans&display=swap">
+<style>{{STYLE}}</style>
+<script type="application/ld+json">{{JSONLD}}</script>
+</head>
+<body>
+  <div id="topnav"><div class="wrap">
+    <a class="brand" href="/">ROCKET CITY CC</a>
+    <nav>{{NAV}}<a href="https://github.com/popnetmedia/rocket-city-game">GitHub</a></nav>
+  </div></div>
+
+  <header class="hero"{{HERO_STYLE}}><div class="scan"></div><div class="wrap">
+    <div class="statusline"><span class="blink">■</span> {{CITY_UPPER}} — CITY ONLINE</div>
+    <h1>{{CITY_UPPER}}</h1>
+    <div class="sub">{{LEDE}}</div>
+    <div class="heroRow">
+      <a class="btn" href="{{PLAY_PATH}}">▶ Fly {{CITY}}</a>
+      <span class="free">FREE · IN YOUR BROWSER · NO INSTALL</span>
+    </div>
+  </div></header>
+
+  <section><div class="wrap">
+    <div class="prompt">WHAT'S IN IT</div>
+    <h2>{{HEADLINE}}</h2>
+    <p class="muted">{{BLURB}}</p>
+    <div class="boards">{{STATS}}</div>
+  </div></section>
+
+  <section><div class="wrap">
+    <div class="prompt">MODES</div>
+    <h2>Things to <em>do here</em></h2>
+    <div class="boards">{{MODES}}</div>
+  </div></section>
+
+  <section><div class="wrap">
+    <div class="prompt">LEADERBOARDS</div>
+    <h2>{{CITY}}'s <em>top pilots</em></h2>
+    <p class="muted">Live times and counts from this city. Beat them, then share your run.</p>
+    <div id="boards" class="boards"></div>
+  </div></section>
+
+  <section><div class="wrap">
+    <h2>The city's waiting. <em>Wheels up.</em></h2>
+    <p class="muted">Runs in any browser. Nothing to install.</p>
+    <p style="margin-top:18px"><a class="btn" href="{{PLAY_PATH}}">▶ Fly {{CITY}} now</a></p>
+  </div></section>
+
+  <footer><div class="wrap">
+    <span>ROCKET CITY CC — THE GAME</span>
+    <span class="muted">MAP © GOOGLE · DATA © OSM / DEFLOCK · <a href="https://github.com/popnetmedia/rocket-city-game">OPEN SOURCE ON GITHUB</a></span>
+  </div></footer>
+
+<script type="module">
+  const BASE = (import.meta.env.VITE_SCORES_URL || (import.meta.env.VITE_MP_SERVER || 'ws://localhost:8787')).trim().replace(/^ws/, 'http').replace(/\/$/, '');
+  const BOARDS = {{BOARDS_JSON}};
+  const PLAY = '{{PLAY_PATH}}';
+  const fmtT = (ms) => `${Math.floor(ms/1000/60)}:${((ms/1000)%60).toFixed(1).padStart(4,'0')}`;
+  const el = document.getElementById('boards');
+  if (!BOARDS.length) el.innerHTML = '<p class="muted">No scored modes here yet — this city is still being built out.</p>';
+  for (const b of BOARDS) {
+    const card = document.createElement('div'); card.className = 'board';
+    card.innerHTML = `<h3>${b.name}</h3><div class="sub">${b.sub}</div><ol></ol><a class="playlink" href="${PLAY}?game=${b.id}">▶ Play this</a>`;
+    el.appendChild(card); const ol = card.querySelector('ol');
+    try {
+      const r = await fetch(`${BASE}/scores?race=${b.id}`);
+      const list = r.ok ? await r.json() : [];
+      if (!list.length) { ol.innerHTML = '<div class="empty">No times yet — be the first.</div>'; continue; }
+      ol.innerHTML = list.slice(0,5).map((e,i)=>`<li><span class="rk">#${i+1}</span><span class="nm">${e.name}</span><span class="sc">${b.type==='time'?fmtT(e.ms):e.ms}</span></li>`).join('');
+    } catch { ol.innerHTML = '<div class="empty">Leaderboard offline — play to set the pace.</div>'; }
+  }
+</script>
+</body></html>

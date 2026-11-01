@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Play Rocket City CC in your browser. Fly a rocket over a photoreal 3D Huntsville and Madison, Alabama — races, hunts, coin runs and tours. Free, no install." />
+    <title>Play Rocket City CC — 3D Huntsville Flight Game</title>
+    <link rel="canonical" href="https://rocketcity.cc/play">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Rocket City CC">
+  <meta property="og:title" content="Play Rocket City CC — 3D Huntsville Flight Game">
+  <meta property="og:description" content="Fly over Huntsville & Madison in a rocket. Play local games, hunt Flock cameras, race the city. Free in your browser.">
+  <meta property="og:url" content="https://rocketcity.cc/play">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Play Rocket City CC — 3D Huntsville Flight Game">
+  <meta name="twitter:description" content="Fly over Huntsville & Madison in a rocket. Free in your browser.">
+
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#05070a">
+</head>
+  <body data-city="huntsville">
+    <canvas id="game"></canvas>
+    <div id="night-tint"></div>
+
+    <!-- HUD -->
+    <div id="hud">
+      <a id="home-btn" href="/" title="Back to home">◀ MENU</a>
+      <button id="mobile-menu" type="button" aria-label="Menu">☰</button>
+      <button id="btn-photo" type="button" title="Share a photo (O)" aria-label="Share a photo">📷</button>
+      <div id="title" class="panel dimmable">
+        <div class="title-main">ROCKET CITY CC</div>
+        <div class="title-sub">— THE GAME —</div>
+      </div>
+      <!-- Optional per-city billboard (city.billboard). Hidden unless a city configures one;
+           the title wordmark keeps its place otherwise. -->
+      <a id="billboard" class="dimmable hidden" target="_blank" rel="noopener sponsored">
+        <img alt="" hidden />
+        <span id="billboard-house" hidden></span>
+      </a>
+
+      <div id="status" class="panel dimmable-soft">
+        <div class="status-line"><span class="blink">■</span> <span id="city-name">—</span> — <span id="city-status">CITY LOADING</span></div>
+        <div class="row"><span class="k">ONLINE NOW</span><span id="online-now" class="v" style="color:var(--green)">—</span></div>
+        <div class="row wrow"><span class="k">WEATHER</span><span id="weather" class="v">--</span></div>
+        <div class="row"><span class="k">MODE</span><span id="mode" class="v">WALK</span></div>
+        <div class="row"><span class="k">WINGS</span><span id="glider" class="v">STOWED</span></div>
+        <div class="row"><span class="k">FUEL</span><span class="v fuel"><span class="fuel-track"><span id="fuel-bar"></span></span><span id="fuel-text">0%</span></span></div>
+        <div class="row"><span class="k">SPEED</span><span id="speed" class="v">0 MPH</span></div>
+        <div class="row"><span class="k">LAT</span><span id="lat" class="v">--</span></div>
+        <div class="row"><span class="k">LON</span><span id="lon" class="v">--</span></div>
+        <div class="row"><span class="k">ALT</span><span id="alt" class="v">--</span></div>
+        <div class="row"><span class="k">FPS</span><span id="fps" class="v">--</span></div>
+        <div class="row"><span class="k">TILES</span><span id="tiles" class="v">--</span></div>
+        <div class="row"><span class="k">QUALITY</span><span id="quality" class="v">HIGH</span></div>
+        <div class="row"><span class="k">AUDIO</span><span id="mute" class="v">ON</span></div>
+        <div class="row"><span class="k">CLOCK</span><span id="session-clock" class="v">00:00</span></div>
+      </div>
+
+      <div id="legend" class="panel dimmable collapsed">
+        <button type="button" class="legend-head" id="legend-toggle">CONTROLS <span class="caret">▸</span></button>
+        <div class="row"><span class="key">WASD</span><span>MOVE</span></div>
+        <div class="row"><span class="key">MOUSE</span><span>LOOK (CLICK TO LOCK)</span></div>
+        <div class="row"><span class="key">SPACE</span><span>JUMP</span></div>
+        <div class="row"><span class="key">SHIFT</span><span>SPRINT</span></div>
+        <div class="row"><span class="key">C</span><span>CAMERA 3RD / 1ST / DRONE / HIGH</span></div>
+        <div class="row"><span class="key">V</span><span>JACK / EXIT CAR</span></div>
+        <div class="row"><span class="key">H</span><span>GLIDER (WHILE AIRBORNE)</span></div>
+        <div class="row"><span class="key">F</span><span>FLY (SPACE UP · SHIFT BOOST)</span></div>
+        <div class="row"><span class="key">Y</span><span>GLIDED TOUR (AUTO-FLY)</span></div>
+        <div class="row"><span class="key">M</span><span>MUTE AUDIO</span></div>
+        <div class="row"><span class="key">G</span><span>TILE QUALITY</span></div>
+        <div class="row"><span class="key">J</span><span>CINEMATIC GRADE</span></div>
+        <div class="row"><span class="key">R</span><span>RETURN TO SURFACE</span></div>
+        <div class="row"><span class="key">B</span><span>CITY DETAIL (OSM)</span></div>
+        <div class="row"><span class="key">P</span><span>CHARACTER</span></div>
+        <div class="row"><span class="key">TAB</span><span>HIDE HUD</span></div>
+        <div class="row"><span class="key">ESC</span><span>RELEASE MOUSE</span></div>
+      </div>
+
+      <div id="missions-menu" class="panel dimmable">
+        <div class="legend-head">MISSIONS &amp; EVENTS</div>
+        <div id="missions-list"></div>
+      </div>
+
+      <div id="teleport" class="panel dimmable">
+        <div class="legend-head">GO ANYWHERE</div>
+        <form id="goform">
+          <input id="goinput" type="text" placeholder="address or lat,lon — e.g. 300 Church St" autocomplete="off" spellcheck="false" />
+          <button type="submit">GO</button>
+        </form>
+        <div id="presets"></div>
+      </div>
+
+      <div id="mp" class="panel dimmable">
+        <div class="row"><span class="k">MULTIPLAYER</span><button id="mp-toggle" type="button">OFF</button></div>
+        <div class="row"><span class="k">LINK</span><span id="mp-status" class="v">OFF</span></div>
+        <div class="row"><span class="k">PLAYERS</span><span id="mp-count" class="v">1</span></div>
+        <div class="row"><span class="k">CALLSIGN</span><span id="mp-callsign" class="v">--</span></div>
+        <div class="mp-hint">ENTER — EMOJI 🚀</div>
+      </div>
+
+      <div id="mission" class="panel dimmable-soft">
+        <div class="mission-row"><span id="mission-title" class="legend-head">MISSION 1 — FUEL RUN</span><span id="mission-progress" class="v">0/10 FUEL CELLS</span></div>
+        <div id="mission-hint" class="mp-hint" style="text-align:left"></div>
+
+      </div>
+      <div id="toast" class="hidden"></div>
+      <div id="race-timer" class="hidden"></div>
+      <div id="prompt" class="hidden"></div>
+      <button id="ctx-btn" class="hidden" type="button"></button>
+      <div id="zone"></div>
+      <div id="golf-card" class="hidden"></div>
+      <div id="derby-card" class="hidden"></div>
+      <a id="sponsor" class="dimmable hidden" target="_blank" rel="noopener"></a>
+      <a id="credit" href="https://github.com/popnetmedia/rocket-city-game" target="_blank" rel="noopener">OPEN SOURCE ON GITHUB</a>
+
+      <div id="emoji-bar" class="hidden">
+        <button type="button" data-e="👍">👍</button>
+        <button type="button" data-e="🔥">🔥</button>
+        <button type="button" data-e="🚀">🚀</button>
+        <button type="button" data-e="😂">😂</button>
+        <button type="button" data-e="❤️">❤️</button>
+        <button type="button" data-e="😮">😮</button>
+        <button type="button" data-e="🏁">🏁</button>
+        <button type="button" data-e="👋">👋</button>
+      </div>
+
+      <div id="attribution">
+        <img id="google-logo" alt="Google" />
+        <span id="attribution-text"></span>
+      </div>
+
+      <div id="minimap-wrap" class="panel">
+        <canvas id="minimap" width="200" height="200"></canvas>
+        <div id="minimap-zoom"><button type="button" id="mm-in" title="Zoom in">+</button><button type="button" id="mm-out" title="Zoom out">−</button></div>
+      </div>
+      <div id="flight-keys">
+        <div class="kb-row wasd-wrap">
+          <div class="wasd">
+            <div class="kb-row"><span class="kc mv">W<i>↑</i></span></div>
+            <div class="kb-row"><span class="kc mv">A<i>←</i></span><span class="kc mv">S<i>↓</i></span><span class="kc mv">D<i>→</i></span></div>
+          </div>
+          <span class="kc-lbl">move</span>
+        </div>
+        <div class="kb-row"><span class="kc wide">SHIFT</span><span class="kc-lbl">boost · 2× = ludicrous</span><span class="kc wide">SPACE</span><span class="kc-lbl">up / jump</span></div>
+        <div class="kb-row"><span class="kc">F</span><span class="kc-lbl">fly</span><span class="kc">H</span><span class="kc-lbl">glide</span><span class="kc">V</span><span class="kc-lbl">car</span></div>
+        <div class="kb-row more"><span class="kc-lbl">L golf · C cam · M mute · G tiles · J grade · R surface · B detail · P skin · TAB hud · ESC free</span></div>
+      </div>
+      <div id="spawn-hint" class="hidden">HOLD STILL A MOMENT — the city is sharpening…</div>
+      <div id="boost-tip" class="hidden">⇧ HOLD SHIFT TO BOOST · DOUBLE-TAP FOR LUDICROUS SPEED</div>
+      <div id="steer-tip" class="hidden">🖱 CLICK THE SCREEN TO STEER — MOUSE AIMS YOUR FLIGHT</div>
+      <div id="hunt-counters"></div>
+      <div id="tour-bar" class="hidden">
+        <span id="tour-label">▶ GUIDED TOUR</span>
+        <button id="tour-speed" type="button">1×</button>
+        <button id="tour-action" type="button">TAKE OVER</button>
+      </div>
+      <div id="motion-banner"></div>
+      <div id="watermark" class="hidden"></div>
+      <div id="touch-note" class="panel hidden"><span>BEST ON DESKTOP — touch controls are basic</span><button id="touch-note-close" type="button" aria-label="Dismiss">×</button></div>
+
+      <button id="nav-guide" type="button" class="hidden">
+        <span id="nav-arrow">➤</span>
+        <span class="nav-txt"><span id="nav-name">—</span><span id="nav-dist"></span></span>
+        <span id="nav-map-hint">MAP</span>
+      </button>
+      <div id="touch-ui" class="hidden">
+        <div id="joy-zone"><div id="joy-base"><div id="joy-knob"></div></div></div>
+        <div id="look-zone"></div>
+        <div id="boost-stick"><div id="boost-base"><div id="boost-knob">BOOST</div></div></div>
+        <div id="touch-buttons">
+          <button id="btn-tour" type="button" data-code="KeyY">TOUR</button>
+          <button id="btn-fly" type="button" data-code="KeyF">FLY</button>
+          <button id="btn-jump" type="button" data-code="Space">JUMP</button>
+          <button id="btn-car" type="button" data-code="KeyV">CAR</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="fade"></div>
+
+    <!-- Overlays -->
+    <div id="loading" class="overlay">
+      <div class="overlay-box">
+        <div class="overlay-title">ROCKET CITY CC</div>
+        <div class="overlay-sub">ESTABLISHING UPLINK…</div>
+        <div class="bar"><div id="loadbar"></div></div>
+        <div id="loadtext" class="overlay-small">CONTACTING TILE SERVER</div>
+      </div>
+    </div>
+
+    <div id="paused" class="overlay hidden">
+      <div class="overlay-box">
+        <div class="overlay-title">PAUSED</div>
+        <div class="overlay-sub">CLICK TO RESUME</div>
+        <div class="overlay-small">Tile streaming halted to save quota.</div>
+      </div>
+    </div>
+
+    <div id="session-end" class="overlay hidden">
+      <div class="overlay-box">
+        <div class="overlay-title">SESSION COMPLETE</div>
+        <div class="overlay-sub">RELOAD TO KEEP EXPLORING</div>
+        <div class="overlay-small">Thanks for visiting the Rocket City. 45-minute session cap reached.</div>
+        <button id="reload-btn">RELOAD</button>
+      </div>
+    </div>
+
+    <div id="shop-modal" class="overlay hidden">
+      <div class="overlay-box menu-box" style="text-align:left">
+        <div id="shop-name" class="overlay-title" style="font-size:24px;color:var(--amber)"></div>
+        <div id="shop-blurb" class="overlay-small"></div>
+        <div id="shop-offer" class="menu-coupon" style="border-color:var(--amber);color:var(--amber);margin-top:14px"></div>
+        <div class="menu-actions" style="margin-top:16px">
+          <button id="shop-buy" type="button">SHOP NOW →</button>
+          <button id="shop-close" type="button">CLOSE</button>
+        </div>
+        <div id="shop-note" class="overlay-small" style="margin-top:10px">Opens the store in a new tab.</div>
+      </div>
+    </div>
+
+    <div id="results-modal" class="overlay hidden">
+      <div class="overlay-box" style="cursor:default;max-width:440px;text-align:left">
+        <div id="results-title" class="overlay-title" style="font-size:24px"></div>
+        <div id="results-time" class="overlay-sub" style="font-size:30px;color:var(--amber)"></div>
+        <div id="results-board"></div>
+        <div class="menu-actions" style="margin-top:16px">
+          <button id="results-share" type="button">📸 SHARE MY RUN</button>
+          <button id="results-close" type="button">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tour-picker" class="overlay hidden">
+      <div class="overlay-box" style="text-align:left;max-width:360px">
+        <div class="overlay-title" style="font-size:22px;color:var(--amber)">PICK A TOUR</div>
+        <div class="overlay-small" style="margin-bottom:10px">Sit back — the rocket flies itself.</div>
+        <div id="tour-list"></div>
+        <div class="menu-actions" style="margin-top:14px"><button id="tour-picker-close" type="button">CLOSE</button></div>
+      </div>
+    </div>
+
+    <div id="pause-modal" class="overlay hidden">
+      <div class="overlay-box" style="cursor:default;max-width:420px;text-align:left">
+        <div class="overlay-title" style="font-size:30px">PAUSED</div>
+        <div class="overlay-small" style="margin-top:6px">Rocket City CC — The Game</div>
+        <div id="pause-controls" style="margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.9">
+          <div>WASD + MOUSE — move &amp; look · SPACE jump · SHIFT sprint/boost</div>
+          <div>F fly · H glider · V car · E menus · C camera · P character</div>
+          <div>B city detail · K Flock map · G tile quality · R return to surface</div>
+          <div>M mute · TAB hide HUD · ESC this menu</div>
+        </div>
+        <div class="menu-actions" style="margin-top:18px">
+          <a href="/"><button type="button">◀ HOME</button></a>
+          <button id="pause-resume" type="button">RESUME (ESC)</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="welcome" class="overlay">
+      <div class="overlay-box" id="welcome-box">
+        <div class="welcome-kicker">IN REAL 3D</div>
+        <div class="welcome-title">ROCKET CITY CC</div>
+        <div class="welcome-sub">Fly a rocket over the real city. Pick a mode and jump right in — or free-fly and explore.</div>
+        <div class="welcome-modes" id="welcome-modes"></div>
+        <div class="welcome-actions">
+          <button id="welcome-fly" type="button" class="welcome-secondary">▶ FREE FLIGHT / EXPLORE</button>
+        </div>
+        <div class="welcome-hint"><b>W A S D</b> fly · <b>SHIFT</b> boost · <b>SPACE</b> up · <b>O</b> photo · <b>Y</b> tours</div>
+      </div>
+    </div>
+
+    <div id="award-modal" class="overlay hidden">
+      <canvas id="confetti"></canvas>
+      <div class="overlay-box award-box">
+        <div class="award-ribbon">★ AWARD UNLOCKED ★</div>
+        <div class="award-badge" id="award-badge">☕</div>
+        <div class="award-title" id="award-title">STARBUCK AWARD</div>
+        <div class="award-blurb" id="award-blurb"></div>
+        <div class="menu-actions">
+          <button id="award-briefcase" type="button">🏆 MY BRIEFCASE</button>
+          <button id="award-close" type="button">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="briefcase-modal" class="overlay hidden">
+      <div class="overlay-box briefcase-box">
+        <div class="overlay-title" style="color:var(--amber)">🏆 YOUR BRIEFCASE</div>
+        <div class="overlay-small">Awards you've earned flying Rocket City CC — saved on this device.</div>
+        <div id="briefcase-grid"></div>
+        <div class="menu-actions" style="justify-content:center"><button id="briefcase-close" type="button">CLOSE</button></div>
+      </div>
+    </div>
+
+    <div id="menu-modal" class="overlay hidden">
+      <div class="overlay-box menu-box">
+        <div id="menu-name" class="overlay-title" style="font-size:24px"></div>
+        <div id="menu-blurb" class="overlay-small"></div>
+        <div id="menu-items"></div>
+        <div id="menu-note" class="overlay-small hidden" style="margin-top:12px"></div>
+        <div id="menu-coupon" class="menu-coupon hidden"></div>
+        <div class="menu-actions">
+          <a id="menu-link" class="hidden" target="_blank" rel="noopener"><button type="button">VISIT WEBSITE</button></a>
+          <button id="menu-close" type="button">CLOSE (ESC)</button>
+        </div>
+        <div id="menu-footer" class="overlay-small" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div id="tile-error" class="overlay hidden">
+      <div class="overlay-box">
+        <div class="overlay-title">UPLINK LOST</div>
+        <div class="overlay-sub">THE ROCKET CITY WENT DARK</div>
+        <div id="tile-error-detail" class="overlay-small"></div>
+        <button id="tile-error-retry" type="button">RETRY</button>
+      </div>
+    </div>
+
+    <div id="banner" class="hidden">
+      <div class="banner-title" id="banner-title">MAP TILES API KEY MISSING</div>
+      <div id="banner-body"></div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,216 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fly New York City, New York in 3D — Rocket City CC</title>
+<link rel="canonical" href="https://rocketcity.cc/nyc">
+<meta name="description" content="Fly a rocket over a photorealistic 3D New York City, New York in your browser. 1 scored modes, real landmarks, free, no install.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Rocket City CC">
+<meta property="og:title" content="Fly New York City, New York in 3D — Rocket City CC">
+<meta property="og:description" content="Fly a rocket over a photorealistic 3D New York City, New York in your browser. 1 scored modes, real landmarks, free, no install.">
+<meta property="og:url" content="https://rocketcity.cc/nyc">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#05070a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono&family=IBM+Plex+Sans&display=swap">
+<style>
+    :root {
+      --bg:#05070a; --panel:#0a141b; --line:#123526; --green:#39ff88; --green-dim:#1f7a4a;
+      --amber:#ffb347; --pink:#ff5fa2; --text:#cfe9d8; --muted:#7da58c;
+      --display:"Chakra Petch","Arial Narrow",sans-serif; --body:"IBM Plex Sans","Helvetica Neue",sans-serif; --mono:"IBM Plex Mono",Menlo,monospace;
+    }
+    *{box-sizing:border-box;margin:0}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.6}
+    .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+    a{color:var(--green)}
+    a:focus-visible,.btn:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+
+     #topnav{position:absolute;top:0;left:0;right:0;z-index:5}
+    #topnav .wrap{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;max-width:960px}
+    #topnav .brand{font-family:var(--display);font-weight:700;color:var(--green);letter-spacing:.14em;text-decoration:none;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+    #topnav nav a{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#dfe9e3;text-decoration:none;margin-left:20px;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+    #topnav nav a:hover{color:var(--green)}
+    .hero{position:relative;min-height:82vh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;
+      background:#0a1a12}
+    .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,10,.55) 0%,rgba(5,7,10,.15) 40%,rgba(5,7,10,.92) 88%,var(--bg) 100%)}
+    .hero .scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 1px,transparent 1px 3px);pointer-events:none;z-index:2}
+    .hero .wrap{position:relative;z-index:3;padding-bottom:64px;padding-top:120px}
+    .statusline{font-family:var(--mono);font-size:11px;letter-spacing:.25em;color:var(--green);text-transform:uppercase}
+    .blink{animation:blink 1.2s steps(2,start) infinite}
+    @keyframes blink{to{visibility:hidden}}
+    @media (prefers-reduced-motion:reduce){.blink{animation:none}}
+    h1{font-family:var(--display);font-weight:700;font-size:clamp(44px,8.5vw,92px);line-height:.98;color:var(--green);
+      text-shadow:0 0 28px rgba(57,255,136,.45),0 2px 6px rgba(0,0,0,.8);letter-spacing:.01em;margin:12px 0 6px;text-wrap:balance}
+    .sub{font-family:var(--display);font-weight:500;font-size:clamp(17px,2.6vw,24px);color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.9)}
+    .heroRow{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-top:28px}
+    .btn{display:inline-block;font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.1em;text-transform:uppercase;
+      color:#04110a;background:var(--green);padding:16px 44px;text-decoration:none;box-shadow:0 0 34px rgba(57,255,136,.35)}
+    .btn:hover{background:#6dffab}
+    /* Second city: same weight and size as .btn so the two read as peers, outlined
+       rather than filled so the page still has one clear primary action. */
+    .btn.alt{color:var(--green);background:transparent;border:2px solid var(--green);
+      padding:14px 42px;box-shadow:0 0 24px rgba(57,255,136,.18)}
+    .btn.alt:hover{background:rgba(57,255,136,.12)}
+    .heroRow .cityNote{display:block;width:100%;font-family:var(--mono);font-size:11px;
+      letter-spacing:.14em;color:var(--muted);margin-top:-8px}
+    .heroRow .free{font-family:var(--mono);font-size:12px;color:var(--text);letter-spacing:.12em;text-shadow:0 1px 4px #000}
+
+    section{padding:56px 0;border-top:1px solid var(--line)}
+    .prompt{font-family:var(--mono);font-size:12px;letter-spacing:.28em;color:var(--green-dim);text-transform:uppercase;margin-bottom:10px}
+    .prompt::before{content:"> ";color:var(--green)}
+    h2{font-family:var(--display);font-weight:600;font-size:clamp(24px,4vw,34px);margin-bottom:18px;text-wrap:balance}
+    h2 em{color:var(--green);font-style:normal}
+    section p{max-width:62ch}
+
+    .feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:24px}
+    .feat{background:var(--panel);border:1px solid var(--line);padding:20px}
+    .feat .k{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--amber);text-transform:uppercase}
+    .feat h3{font-family:var(--display);font-size:19px;margin:6px 0 6px;color:var(--text)}
+    .feat p{font-size:14px;color:var(--muted)}
+
+    .keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:24px;font-family:var(--mono);font-size:12px}
+    .keys div{background:var(--panel);padding:12px 16px;display:flex;justify-content:space-between;gap:10px}
+    .keys b{color:var(--amber);font-weight:600}
+    .keys span{color:var(--muted);text-align:right}
+
+    .boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:24px}
+    .board{background:var(--panel);border:1px solid var(--line);padding:18px}
+    .board h3{font-family:var(--display);font-size:17px;color:var(--green);margin-bottom:4px}
+    .board .sub{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+    .board ol{list-style:none;padding:0;margin:0;font-family:var(--mono);font-size:13px}
+    .board li{display:flex;justify-content:space-between;gap:10px;line-height:1.9;border-bottom:1px dashed var(--line)}
+    .board li:last-child{border-bottom:none}
+    .board li .rk{color:var(--green-dim);width:2em}
+    .board li .nm{flex:1}
+    .board li .sc{color:var(--amber);font-variant-numeric:tabular-nums}
+    .board .empty{color:var(--muted);font-size:12px;font-family:var(--mono)}
+    .board .playlink{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#04110a;background:var(--green);padding:6px 12px;text-decoration:none}
+    .board .playlink:hover{background:#6dffab}
+    .cta{text-align:center;padding:70px 0}
+    footer{border-top:1px solid var(--line);padding:20px 0 28px}
+    footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--green)}
+  </style>
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "VideoGame",
+      "@id": "https://rocketcity.cc/nyc#game",
+      "name": "Rocket City CC — New York City",
+      "url": "https://rocketcity.cc/nyc",
+      "description": "Fly a rocket over a photorealistic 3D New York City, New York in your browser. 1 scored modes, real landmarks, free, no install.",
+      "playMode": "SinglePlayer",
+      "applicationCategory": "GameApplication",
+      "gamePlatform": "Web browser",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "gameLocation": {
+        "@type": "Place",
+        "name": "New York City, New York",
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 40.7549,
+          "longitude": -73.984
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Rocket City CC",
+          "item": "https://rocketcity.cc/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "New York City",
+          "item": "https://rocketcity.cc/nyc"
+        }
+      ]
+    }
+  ]
+}</script>
+</head>
+<body>
+  <div id="topnav"><div class="wrap">
+    <a class="brand" href="/">ROCKET CITY CC</a>
+    <nav><a href="/huntsville">Huntsville</a><a href="/chattanooga">Chattanooga</a><a href="/knoxville">Knoxville</a><a href="/nashville">Nashville</a><a href="/orlando">Orlando</a><a href="/miami">Miami</a><a href="/anaheim">Anaheim</a><a href="/nyc">New York City</a><a href="https://github.com/popnetmedia/rocket-city-game">GitHub</a></nav>
+  </div></div>
+
+  <header class="hero" style="background-image:none"><div class="scan"></div><div class="wrap">
+    <div class="statusline"><span class="blink">■</span> NEW YORK CITY — CITY ONLINE</div>
+    <h1>NEW YORK CITY</h1>
+    <div class="sub">Manhattan and Queens. Photorealistic Google 3D of the real New York City, flown in a browser. Race it, hunt it, or just explore.</div>
+    <div class="heroRow">
+      <a class="btn" href="/play/nyc">▶ Fly New York City</a>
+      <span class="free">FREE · IN YOUR BROWSER · NO INSTALL</span>
+    </div>
+  </div></header>
+
+  <section><div class="wrap">
+    <div class="prompt">WHAT'S IN IT</div>
+    <h2>The real New York City, at its real coordinates</h2>
+    <p class="muted">Everything below is sourced data at surveyed positions — nothing is invented or decorative.</p>
+    <div class="boards"><div class="board"><h3>1548</h3><div class="sub">mapped ALPR cameras</div><p class="muted" style="font-size:13px;margin-top:6px">Real DeFlock data, hunted in-game</p></div>
+      <div class="board"><h3>14</h3><div class="sub">quick-jump landmarks</div><p class="muted" style="font-size:13px;margin-top:6px">Teleport straight to them</p></div></div>
+  </div></section>
+
+  <section><div class="wrap">
+    <div class="prompt">MODES</div>
+    <h2>Things to <em>do here</em></h2>
+    <div class="boards"><div class="board"><h3>Find the Flock</h3><p class="muted" style="font-size:13px;margin-top:6px">Hunt every mapped surveillance camera in the city.</p></div>
+      <div class="board"><h3>Free flight</h3><p class="muted" style="font-size:13px;margin-top:6px">No objective — just fly the real city.</p></div></div>
+  </div></section>
+
+  <section><div class="wrap">
+    <div class="prompt">LEADERBOARDS</div>
+    <h2>New York City's <em>top pilots</em></h2>
+    <p class="muted">Live times and counts from this city. Beat them, then share your run.</p>
+    <div id="boards" class="boards"></div>
+  </div></section>
+
+  <section><div class="wrap">
+    <h2>The city's waiting. <em>Wheels up.</em></h2>
+    <p class="muted">Runs in any browser. Nothing to install.</p>
+    <p style="margin-top:18px"><a class="btn" href="/play/nyc">▶ Fly New York City now</a></p>
+  </div></section>
+
+  <footer><div class="wrap">
+    <span>ROCKET CITY CC — THE GAME</span>
+    <span class="muted">MAP © GOOGLE · DATA © OSM / DEFLOCK · <a href="https://github.com/popnetmedia/rocket-city-game">OPEN SOURCE ON GITHUB</a></span>
+  </div></footer>
+
+<script type="module">
+  const BASE = (import.meta.env.VITE_SCORES_URL || (import.meta.env.VITE_MP_SERVER || 'ws://localhost:8787')).trim().replace(/^ws/, 'http').replace(/\/$/, '');
+  const BOARDS = [{"id":"flock-hunt","name":"FIND THE FLOCK","sub":"Hunt · flock found","type":"count"}];
+  const PLAY = '/play/nyc';
+  const fmtT = (ms) => `${Math.floor(ms/1000/60)}:${((ms/1000)%60).toFixed(1).padStart(4,'0')}`;
+  const el = document.getElementById('boards');
+  if (!BOARDS.length) el.innerHTML = '<p class="muted">No scored modes here yet — this city is still being built out.</p>';
+  for (const b of BOARDS) {
+    const card = document.createElement('div'); card.className = 'board';
+    card.innerHTML = `<h3>${b.name}</h3><div class="sub">${b.sub}</div><ol></ol><a class="playlink" href="${PLAY}?game=${b.id}">▶ Play this</a>`;
+    el.appendChild(card); const ol = card.querySelector('ol');
+    try {
+      const r = await fetch(`${BASE}/scores?race=${b.id}`);
+      const list = r.ok ? await r.json() : [];
+      if (!list.length) { ol.innerHTML = '<div class="empty">No times yet — be the first.</div>'; continue; }
+      ol.innerHTML = list.slice(0,5).map((e,i)=>`<li><span class="rk">#${i+1}</span><span class="nm">${e.name}</span><span class="sc">${b.type==='time'?fmtT(e.ms):e.ms}</span></li>`).join('');
+    } catch { ol.innerHTML = '<div class="empty">Leaderboard offline — play to set the pace.</div>'; }
+  }
+</script>
+</body></html>

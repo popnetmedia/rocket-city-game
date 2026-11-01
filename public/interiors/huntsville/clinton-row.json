@@ -1,0 +1,21 @@
+{
+  "size": { "w": 12, "d": 9, "h": 4 },
+  "palette": "warm-wood",
+  "props": [
+    { "kind": "counter", "x": -3.4, "z": -2.6, "rot": 0, "w": 4 },
+    { "kind": "stool", "x": -4.4, "z": -1.4 },
+    { "kind": "stool", "x": -3.4, "z": -1.4 },
+    { "kind": "stool", "x": -2.4, "z": -1.4 },
+    { "kind": "table", "x": 2.6, "z": -1.6 },
+    { "kind": "chair", "x": 2.6, "z": -0.7, "rot": 180 },
+    { "kind": "chair", "x": 2.6, "z": -2.5 },
+    { "kind": "shelf", "x": 5.4, "z": 0, "rot": 90 },
+    { "kind": "plant", "x": -5.0, "z": 3.2 },
+    { "kind": "rug", "x": 0, "z": 1.4 },
+    { "kind": "lamp", "x": 0, "z": -1.5 },
+    { "kind": "lamp", "x": 0, "z": 2.5 },
+    { "kind": "door", "x": 0, "z": 4.4 }
+  ],
+  "art": [],
+  "cta": { "text": "SEE WHAT IS OPEN", "url": "https://downtownhuntsville.org/" }
+}

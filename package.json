@@ -1,0 +1,31 @@
+{
+  "name": "rocket-city-the-game",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "relay": "node server/local.js",
+    "test:room": "node server/room.test.js",
+    "test:do": "node server/do.test.js",
+    "test": "node server/room.test.js && node server/do.test.js && node scripts/validate-data.mjs && node scripts/sync-city-pages.mjs --check && node scripts/golf.test.mjs && node scripts/city.test.mjs && node scripts/whatson.test.mjs && node scripts/no-secret-leak.test.mjs && node scripts/rooms.test.mjs && node scripts/imports.test.mjs && node scripts/tdz.test.mjs && node scripts/tiles-events.test.mjs && node scripts/interiors.test.mjs && node scripts/derby.test.mjs && node scripts/shadows.test.mjs && node scripts/characters.test.mjs && node scripts/html.test.mjs",
+    "relay:dev": "npx wrangler dev server/do.js",
+    "relay:deploy": "npx wrangler deploy",
+    "bake:osm": "node scripts/bake-osm.mjs",
+    "test:data": "node scripts/validate-data.mjs",
+    "cities:sync": "node scripts/sync-city-pages.mjs",
+    "cities:new": "node scripts/new-city.mjs"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "3d-tiles-renderer": "0.5.2",
+    "three": "0.185.1",
+    "three-mesh-bvh": "^0.9.14"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0",
+    "ws": "^8.21.3"
+  }
+}

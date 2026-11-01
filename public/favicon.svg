@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="12" fill="#05070a"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="11" fill="none" stroke="#1f7a4a" stroke-width="2"/>
+  <!-- exhaust flame -->
+  <path d="M32 50 l5 8 -5 4 -5 -4 Z" fill="#ffb347"/>
+  <!-- fins -->
+  <path d="M22 33 L14 47 L22 45 Z" fill="#1f7a4a"/>
+  <path d="M42 33 L50 47 L42 45 Z" fill="#1f7a4a"/>
+  <!-- body -->
+  <path d="M32 6 C40 15 42 26 42 36 L42 48 L22 48 L22 36 C22 26 24 15 32 6 Z" fill="#39ff88"/>
+  <!-- window -->
+  <circle cx="32" cy="26" r="5.5" fill="#05070a"/>
+  <circle cx="32" cy="26" r="3" fill="#7fffd4"/>
+  <!-- body band -->
+  <rect x="22" y="39" width="20" height="4" fill="#05070a" opacity="0.55"/>
+</svg>

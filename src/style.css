@@ -1,0 +1,633 @@
+:root {
+  --bg: #05070a;
+  --panel: rgba(4, 10, 14, 0.78);
+  --line: #0f3a2a;
+  --green: #39ff88;
+  --green-dim: #1d8a4c;
+  --amber: #ffb347;
+  --red: #ff4d5a;
+  --text: #cfe9d8;
+  --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, "Courier New", monospace;
+  /* These three were used throughout the HUD but only ever defined in index.html and the
+     other standalone pages. The game page loads style.css alone, so every
+     font-family: var(--display) and color: var(--muted) here was invalid at computed-value
+     time and silently fell back — 37 declarations rendering in the wrong font and colour.
+     Values match the other pages so the whole site stays consistent. */
+  --display: "Chakra Petch", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", sans-serif;
+  --muted: #7da58c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; font-family: var(--mono); color: var(--text); }
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+.hidden { display: none !important; }
+
+.panel {
+  position: absolute; background: var(--panel); border: 1px solid var(--line);
+  padding: 10px 12px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+  box-shadow: 0 0 0 1px rgba(57,255,136,0.08), 0 0 24px rgba(57,255,136,0.06) inset;
+  backdrop-filter: blur(3px);
+}
+.panel::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px);
+}
+#title { top: calc(16px + var(--banner-h, 0px)); left: 16px; text-align: left; }
+.title-main { font-size: 22px; font-weight: 700; color: var(--green); text-shadow: 0 0 8px rgba(57,255,136,0.6); letter-spacing: 0.18em; }
+.title-sub { font-size: 10px; color: var(--green-dim); letter-spacing: 0.3em; }
+
+#status { top: calc(324px + var(--banner-h, 0px)); left: 16px; min-width: 200px; max-width: 224px; }
+.status-line { color: var(--green); margin-bottom: 8px; font-weight: 700; }
+.blink { animation: blink 1.2s steps(2, start) infinite; }
+@keyframes blink { to { visibility: hidden; } }
+.row { display: flex; justify-content: space-between; gap: 12px; line-height: 1.7; }
+.k { color: var(--green-dim); }
+.v { color: var(--text); font-variant-numeric: tabular-nums; }
+
+#legend { display: none; }
+.legend-head { color: var(--green); font-weight: 700; margin-bottom: 6px; letter-spacing: 0.2em; }
+.key { display: inline-block; min-width: 64px; color: var(--amber); }
+
+#teleport { bottom: 56px; right: 16px; pointer-events: auto; width: 300px; }
+#goform { display: flex; gap: 6px; margin-bottom: 8px; }
+#goinput {
+  flex: 1; background: #02060a; border: 1px solid var(--line); color: var(--green);
+  font-family: var(--mono); font-size: 12px; padding: 6px 8px; outline: none; text-transform: none;
+}
+#goinput:focus { border-color: var(--green); box-shadow: 0 0 8px rgba(57,255,136,0.3); }
+button {
+  background: #05140c; border: 1px solid var(--green-dim); color: var(--green); font-family: var(--mono);
+  font-size: 11px; letter-spacing: 0.12em; padding: 6px 10px; cursor: pointer; text-transform: uppercase;
+}
+button:hover { background: var(--green-dim); color: #02060a; }
+#presets { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+#presets button { width: 100%; padding: 6px 4px; font-size: 10px; }
+
+#attribution {
+  position: absolute; bottom: 10px; left: 12px; right: 12px; display: flex; align-items: center; gap: 10px;
+  font-size: 10px; color: #dfe9e3; text-shadow: 0 0 4px #000, 0 0 2px #000; pointer-events: none;
+  text-transform: none; letter-spacing: 0;
+}
+#google-logo { height: 20px; display: none; filter: drop-shadow(0 0 2px rgba(0,0,0,0.9)); }
+#google-logo[src] { display: block; }
+#attribution-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+#touch-note { top: calc(70px + var(--banner-h, 0px)); left: 16px; color: var(--amber); border-color: var(--amber); pointer-events: auto; display: flex; gap: 10px; align-items: center; }
+#touch-note-close { padding: 0 8px; font-size: 14px; line-height: 1.4; border-color: var(--amber); color: var(--amber); }
+
+/* ---- touch controls ---- */
+#touch-ui { position: absolute; inset: 0; pointer-events: none; }
+#joy-zone { position: absolute; left: 0; bottom: 0; width: 45%; height: 55%; pointer-events: auto; touch-action: none; }
+#look-zone { position: absolute; right: 0; bottom: 0; width: 55%; height: 55%; pointer-events: auto; touch-action: none; }
+#joy-base {
+  position: absolute; left: 40px; bottom: 60px; width: 120px; height: 120px; border-radius: 50%;
+  border: 2px solid var(--green-dim); background: rgba(4,10,14,0.5); opacity: 0.7;
+}
+#joy-knob {
+  position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 14px rgba(57,255,136,0.6); opacity: 0.85;
+}
+#touch-buttons { position: absolute; right: 14px; bottom: 18px; display: flex; flex-direction: row; gap: 8px; pointer-events: auto; }
+#touch-buttons button {
+  width: 62px; height: 46px; font-size: 11px; font-weight: 700; border-radius: 6px; touch-action: none;
+  background: rgba(4,10,14,0.8); user-select: none; -webkit-user-select: none;
+}
+#btn-tour { border-color: var(--amber); color: var(--amber); }
+#touch-buttons button.active { background: var(--green); color: #02060a; }
+body.touch #legend { display: none; }
+body.touch #teleport { bottom: auto; top: calc(280px + var(--banner-h, 0px)); right: 16px; width: 220px; }
+body.touch #presets { grid-template-columns: 1fr; }
+
+
+.overlay {
+  position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+  background: rgba(2, 5, 8, 0.82); font-family: var(--mono); text-align: center; cursor: pointer;
+}
+.overlay-box { border: 1px solid var(--green-dim); padding: 28px 40px; background: var(--panel); min-width: 340px; }
+.overlay-title { color: var(--green); font-size: 34px; letter-spacing: 0.25em; font-weight: 700; text-shadow: 0 0 12px rgba(57,255,136,0.7); }
+.overlay-sub { color: var(--amber); margin-top: 8px; letter-spacing: 0.2em; font-size: 13px; }
+.overlay-small { color: var(--green-dim); margin-top: 14px; font-size: 11px; }
+.overlay button { margin-top: 18px; }
+.bar { height: 6px; background: #0a1a12; border: 1px solid var(--line); margin-top: 18px; overflow: hidden; }
+#loadbar { height: 100%; width: 0%; background: var(--green); box-shadow: 0 0 10px var(--green); transition: width 0.2s; }
+
+#banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 30; background: #1a0508; border-bottom: 2px solid var(--red);
+  color: #ffd9dc; font-family: var(--mono); font-size: 12px; padding: 12px 18px; line-height: 1.5;
+}
+.banner-title { color: var(--red); font-weight: 700; letter-spacing: 0.15em; margin-bottom: 4px; }
+#banner code { background: #2a0a0e; padding: 1px 5px; color: #fff; }
+#banner ol { margin: 6px 0 0 18px; padding: 0; }
+
+@media (max-width: 760px) {
+  #legend, #status .row:nth-child(n+7) { display: none; }
+  #teleport { width: calc(100% - 32px); }
+  .overlay-box { min-width: 0; padding: 20px; }
+}
+
+#watermark {
+  position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%);
+  font-size: 12px; letter-spacing: 0.35em; color: var(--amber); opacity: 0.55;
+  border: 1px dashed var(--amber); padding: 4px 12px; text-transform: uppercase; pointer-events: none;
+}
+
+/* spawn fade: black until the first ground raycast connects */
+#fade { position: fixed; inset: 0; background: #000; z-index: 15; pointer-events: none; opacity: 1; transition: opacity 1.4s ease-out; }
+#fade.out { opacity: 0; transition: opacity 1.4s ease-out; }
+
+/* ---- multiplayer ---- */
+#mp { top: calc(320px + var(--banner-h, 0px)); left: 16px; min-width: 200px; pointer-events: auto; font-size: 11px; }
+#mp-toggle { padding: 2px 10px; font-size: 11px; }
+#mp-toggle.on { background: var(--green); color: #02060a; }
+.mp-hint { color: var(--green-dim); font-size: 10px; margin-top: 4px; text-align: right; }
+#chat { left: 50%; transform: translateX(-50%); bottom: 56px; width: 460px; max-width: calc(100% - 32px); pointer-events: auto; text-transform: none; letter-spacing: 0; }
+#chat.collapsed { pointer-events: none; background: transparent; border-color: transparent; box-shadow: none; backdrop-filter: none; }
+#chat.collapsed::before { display: none; }
+#chat.collapsed #chat-form { display: none; }
+#chat.collapsed #chat-log { max-height: 96px; }
+#chat-log { max-height: 180px; overflow-y: auto; font-size: 12px; line-height: 1.5; display: flex; flex-direction: column; justify-content: flex-end; }
+#chat-log .line { text-shadow: 0 0 4px #000; }
+#chat-log .line.sys { color: var(--green-dim); font-style: italic; }
+#chat-log .cs { font-weight: 700; margin-right: 6px; }
+#chat-input { width: 100%; margin-top: 8px; background: #02060a; border: 1px solid var(--green); color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 8px; outline: none; }
+body.touch #mp { top: auto; bottom: 200px; left: 16px; transform: none; min-width: 0; }
+body.touch #chat { bottom: 240px; }
+
+/* ---- minimap ---- */
+/* The 96px base clears the wordmark. When a billboard is showing the wordmark is hidden
+   and the billboard stands in its place (top:52px), so adding --billboard-h on top of 96
+   double-counted and shoved the radar down onto the status panel below it. With a
+   billboard, position from the billboard's own top instead. */
+#minimap-wrap { top: calc(96px + var(--banner-h, 0px)); left: 16px; padding: 6px; pointer-events: auto; }
+#minimap { display: block; width: 200px; height: 200px; border-radius: 50%; }
+#minimap-zoom { position: absolute; right: 6px; top: 6px; display: flex; flex-direction: column; gap: 4px; }
+#minimap-zoom button { width: 24px; height: 24px; padding: 0; font-size: 14px; line-height: 1; }
+body.touch #minimap-wrap { display: none; }
+body.touch #touch-note { top: calc(96px + var(--banner-h, 0px)); }
+#touch-note { top: calc(320px + var(--banner-h, 0px)); }
+
+/* ---- missions ---- */
+#mission { top: calc(16px + var(--banner-h, 0px)); left: 50%; transform: translateX(-50%); min-width: 300px; text-align: left; padding: 6px 12px; }
+.mission-row { display: flex; justify-content: space-between; gap: 14px; align-items: baseline; }
+.mission-row .legend-head { margin-bottom: 0; }
+#mission-progress { color: var(--amber); font-weight: 700; }
+.fuel { display: inline-flex; align-items: center; gap: 6px; }
+.fuel-track { display: inline-block; width: 70px; height: 8px; border: 1px solid var(--green-dim); background: #02060a; overflow: hidden; }
+#fuel-bar { display: block; height: 100%; width: 0; background: var(--amber); box-shadow: 0 0 6px var(--amber); transition: width 0.2s; }
+#toast {
+  /* z-index above the HUD chrome (#mission, #hunt-counters, tips are 6-9) — without
+     it the toast renders under them and claim names were being swallowed. */
+  position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%) scale(0.9); opacity: 0; pointer-events: none;
+  z-index: 12; white-space: pre-line; line-height: 1.35;
+  color: var(--green); font-size: 22px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; text-align: center;
+  text-shadow: 0 0 12px rgba(57,255,136,0.8), 0 0 2px #000; background: rgba(4,10,14,0.7); padding: 14px 28px; border: 1px solid var(--green-dim);
+  transition: opacity 0.25s, transform 0.25s; max-width: 80%;
+}
+#toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+/* claim toasts run to three lines: hunt + venue + street */
+#toast { font-size: 20px; }
+body.touch #mission { top: auto; bottom: 330px; left: 16px; transform: none; min-width: 0; }
+
+#prompt { position: absolute; top: 58%; left: 50%; transform: translateX(-50%); color: var(--amber); font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; background: rgba(4,10,14,0.7); border: 1px solid var(--amber); padding: 6px 14px; pointer-events: none; }
+
+#flight-mode { margin-top: 6px; width: 100%; font-size: 10px; }
+#flight-mode.on { border-color: var(--amber); color: var(--amber); }
+
+/* ---- HUD focus: dim chrome while the character is in motion ---- */
+.panel, #watermark { transition: opacity 0.5s; }
+body.moving .dimmable { opacity: 0.1; pointer-events: none !important; }
+body.moving .dimmable * { pointer-events: none !important; }
+body.moving .dimmable-soft { opacity: 0.45; }
+body.moving #mission-hint, body.moving #flight-mode { display: none; }
+body.moving #watermark { opacity: 0.2; }
+.dimmable:hover { opacity: 1 !important; pointer-events: auto !important; }
+/* Tab hides everything except required attribution + gameplay prompts */
+body.hud-hidden .panel, body.hud-hidden #watermark { display: none !important; }
+body.hud-hidden #attribution, body.hud-hidden #toast, body.hud-hidden #prompt { display: flex !important; }
+body.hud-hidden #toast.hidden { display: none !important; }
+
+#zone {
+  position: absolute; top: 12%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none;
+  color: var(--amber); font-size: 17px; letter-spacing: 0.35em; text-transform: uppercase; text-align: center;
+  text-shadow: 0 0 14px rgba(255,179,71,0.8), 0 0 3px #000; transition: opacity 0.6s;
+}
+#zone.show { opacity: 1; }
+
+/* ---- sponsor slot ---- */
+/* Permanent per-city billboard. Sits exactly where #title does and replaces it on
+   desktop when a city configures one; standard horizontal creative (320x50 by default,
+   larger sizes scale down to the column width and keep their aspect ratio). */
+#billboard {
+  /* 52px, not 16px: #home-btn (◀ MENU) owns the top-left corner and #title already
+     clears it by the same amount. */
+  position: absolute; top: calc(52px + var(--banner-h, 0px)); left: 16px;
+  display: block; padding: 0; line-height: 0; pointer-events: auto;
+  border: 1px solid var(--line); background: var(--panel);
+  /* width, not just max-width: the slot must be the declared size whatever the
+     creative's intrinsic dimensions are, or an odd file collapses the box. */
+  width: min(320px, calc(100vw - 32px));
+}
+#billboard img { display: block; width: 100%; height: auto; }
+/* Unsold state: the slot still stands where the wordmark was, so the inventory is
+   visible to anyone who might buy it rather than hidden behind an empty city config. */
+/* line-height:0 on the container kills the descender gap under a creative image; the
+   house card is text, so it has to put it back or the two lines collapse. min-height
+   holds the real 50px slot so the unsold state is the same size as a booked one. */
+#billboard-house { display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  padding: 6px 14px; text-align: center; line-height: 1.25; min-height: 48px; box-sizing: border-box; }
+.bb-house-main { font-family: var(--display); font-weight: 700; font-size: 15px; letter-spacing: 1.2px; color: var(--amber); }
+.bb-house-sub { font-size: 9px; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
+#billboard:hover { border-color: var(--green-dim); }
+/* Mobile keeps the wordmark and drops the billboard: that HUD is already tight. */
+@media (max-width: 820px) { #billboard { display: none !important; } }
+
+#sponsor {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; letter-spacing: 0.25em; color: var(--green-dim); text-decoration: none; text-transform: uppercase;
+  border: 1px solid var(--line); background: var(--panel); padding: 3px 14px; pointer-events: auto;
+}
+#sponsor:hover { color: var(--green); border-color: var(--green-dim); }
+
+/* ---- scenario menu overlay ---- */
+.menu-box { max-width: 420px; text-align: left; cursor: default; }
+#menu-modal { cursor: default; }
+#menu-items { margin-top: 14px; font-size: 13px; }
+#menu-items .mi { display: flex; justify-content: space-between; gap: 16px; line-height: 1.9; border-bottom: 1px dashed var(--line); }
+#menu-items .mi span:last-child { color: var(--amber); }
+.menu-coupon { margin-top: 14px; border: 1px dashed var(--amber); color: var(--amber); text-align: center; padding: 8px; letter-spacing: 0.2em; }
+.menu-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+#events-btn { margin-top: 6px; width: 100%; font-size: 10px; }
+#events-btn.on { border-color: #ff5fa2; color: #ff5fa2; }
+
+#credit {
+  position: absolute; bottom: 10px; right: 12px; font-size: 9px; letter-spacing: 0.2em; color: var(--green-dim);
+  text-decoration: none; text-transform: uppercase; pointer-events: auto; text-shadow: 0 0 4px #000;
+}
+#credit:hover { color: var(--green); }
+
+/* ---- missions & events menu ---- */
+#missions-menu { bottom: 300px; right: 16px; width: 300px; pointer-events: auto; }
+#missions-list .mrow {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 0;
+  border-bottom: 1px dashed var(--line); font-size: 11px;
+}
+#missions-list .mrow:last-child { border-bottom: none; }
+#missions-list .mname { color: var(--text); }
+#missions-list .mstat { color: var(--green-dim); white-space: nowrap; }
+#missions-list .mstat.done { color: var(--green); }
+#missions-list .mstat.active { color: var(--amber); }
+#missions-list button { padding: 3px 8px; font-size: 10px; }
+#missions-list button.on { background: #ff5fa2; border-color: #ff5fa2; color: #02060a; }
+body.touch #missions-menu { display: none; }
+
+#race-timer {
+  position: absolute; top: calc(52px + var(--banner-h, 0px)); left: 50%; transform: translateX(-50%);
+  color: #4fd8ff; font-size: 14px; font-weight: 700; letter-spacing: 0.15em; font-variant-numeric: tabular-nums;
+  background: rgba(4,10,14,0.75); border: 1px solid #17505f; padding: 5px 16px; pointer-events: none;
+}
+
+/* ---- home button ---- */
+#home-btn {
+  position: absolute; top: calc(16px + var(--banner-h, 0px)); left: 16px; z-index: 6; pointer-events: auto;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .18em; color: var(--green); text-decoration: none;
+  background: var(--panel); border: 1px solid var(--line); padding: 6px 12px; text-transform: uppercase;
+}
+#home-btn:hover { background: var(--green-dim); color: #02060a; }
+/* title panel sits just below the home button */
+#title { top: calc(52px + var(--banner-h, 0px)) !important; }
+
+/* ---- motion / flight ad banner ---- */
+#motion-banner {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; pointer-events: none;
+  text-align: center; font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .12em;
+  text-transform: uppercase; color: #04110a; background: var(--green);
+  padding: 8px 12px; opacity: 0; transform: translateY(100%); transition: opacity .4s, transform .4s;
+  box-shadow: 0 -4px 20px rgba(57,255,136,.25);
+}
+body.moving #motion-banner { opacity: .95; transform: translateY(0); }
+#motion-banner b { color: #04110a; }
+body.moving #attribution { bottom: 42px; }
+body.no-motion-banner.moving #attribution { bottom: 10px; }
+body.moving #sponsor { display: none; }
+
+body.paused-menu .dimmable, body.paused-menu .dimmable-soft { opacity: 1 !important; pointer-events: auto !important; }
+body.paused-menu #motion-banner { opacity: 0 !important; }
+
+#results-board { margin-top: 14px; font-family: var(--mono); font-size: 13px; }
+#results-board .lb { display: flex; justify-content: space-between; gap: 12px; line-height: 1.9; border-bottom: 1px dashed var(--line); }
+#results-board .lb.me { color: var(--amber); font-weight: 700; }
+#results-board .lb .rk { color: var(--green-dim); width: 2.5em; }
+#results-board .lb .nm { flex: 1; }
+#results-board .lb .tm { font-variant-numeric: tabular-nums; }
+#results-board .head { color: var(--green); letter-spacing: .16em; margin-bottom: 6px; }
+
+/* ---- hunt counters + collect pop ---- */
+#hunt-counters { position: absolute; top: 340px; right: 16px; display: flex; flex-direction: column; gap: 4px; z-index: 6; pointer-events: none; }
+body:not(.moving) #status ~ #hunt-counters, #hunt-counters { margin-top: 0; }
+.hunt-row { background: var(--panel); border: 1px solid var(--line); padding: 5px 12px; font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; display: flex; justify-content: space-between; gap: 14px; min-width: 190px; }
+.hunt-row .v { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+.collect-pop { position: absolute; left: 50%; top: 46%; transform: translateX(-50%); font-family: var(--display); font-weight: 700; font-size: 26px; letter-spacing: .12em; text-shadow: 0 0 12px currentColor, 0 0 2px #000; pointer-events: none; animation: collectrise 1.4s ease-out forwards; }
+@keyframes collectrise { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -80px) scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .collect-pop { animation: none; opacity: .95; } }
+/* status panel needs to sit below hunt counters */
+#status { top: calc(324px + var(--banner-h,0px)); }
+/* Billboard layout is DESKTOP ONLY, and the media query is load-bearing rather than tidy:
+   `body.billboard-on #status` outranks the phone rule `#status` on specificity, so without
+   this scope it would override the mobile layout at every width. Same for #title — mobile
+   hides the billboard and keeps the wordmark, and an unscoped rule hid the wordmark too,
+   leaving phones with no branding at all. */
+@media (min-width: 821px) {
+  /* the wordmark stands down rather than stacking with the slot */
+  body.billboard-on #title { display: none; }
+  /* the radar sits under the billboard, positioned from ITS top (52px), not the 96px that
+     cleared the now-hidden wordmark — adding both double-counted and pushed it onto the
+     status panel */
+  body.billboard-on #minimap-wrap { top: calc(52px + var(--banner-h, 0px) + var(--billboard-h, 0px)); }
+  /* and the panel below follows by the same difference, relative to --billboard-h so a
+     taller creative moves both rather than colliding them */
+  body.billboard-on #status { top: calc(324px + var(--banner-h, 0px) + var(--billboard-h, 0px) - 44px); }
+}
+
+/* ---- emoji quick-chat ---- */
+#emoji-bar { position: absolute; left: 50%; bottom: 70px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 8; pointer-events: auto; background: rgba(4,10,14,0.85); border: 1px solid var(--line); padding: 8px 10px; border-radius: 8px; }
+#emoji-bar.hidden { display: none; }
+#emoji-bar button { width: 46px; height: 46px; font-size: 24px; padding: 0; border-color: var(--line); background: #02060a; }
+#emoji-bar button:hover { background: var(--green-dim); }
+.emoji-float { position: absolute; font-size: 40px; pointer-events: none; z-index: 7; animation: emojirise 2s ease-out forwards; text-shadow: 0 2px 6px rgba(0,0,0,.6); }
+@keyframes emojirise { 0% { opacity: 0; transform: translate(-50%,10px) scale(.6);} 15%{opacity:1;} 100%{opacity:0; transform: translate(-50%,-70px) scale(1.2);} }
+
+/* ---- persistent keyboard flight indicator (stays while chrome dims) ---- */
+#flight-keys{position:absolute;left:16px;bottom:16px;z-index:6;pointer-events:none;display:flex;flex-direction:column;gap:5px;align-items:flex-start;font-family:var(--mono);opacity:.9;transition:opacity .4s}
+#flight-keys .kb-row{display:flex;gap:5px;align-items:center}
+#flight-keys .kc{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;font-size:12px;font-weight:600;color:var(--green);background:rgba(4,10,14,.82);border:1px solid var(--green-dim);border-radius:5px;box-shadow:0 1px 0 rgba(57,255,136,.25)}
+#flight-keys .kc.wide{min-width:auto}
+#flight-keys .kc.lbl,#flight-keys .kc-lbl{border:none;background:none;box-shadow:none;color:var(--muted);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding-left:6px}
+/* legend still fully dims; keyboard indicator only dims a little while moving so flight controls stay readable */
+/* WASD as a directional cross: W centered over S, each key shows its arrow */
+#flight-keys .wasd{display:flex;flex-direction:column;align-items:center;gap:5px}
+#flight-keys .wasd-wrap{align-items:flex-end;gap:9px}
+#flight-keys .kc.mv{flex-direction:column;gap:0;min-width:32px;min-height:34px;height:auto;padding:3px 6px;line-height:1.05}
+#flight-keys .kc.mv i{font-style:normal;font-size:9px;color:var(--muted);margin-top:1px}
+#flight-keys .kb-row.more .kc-lbl{padding-left:0;font-size:9px;letter-spacing:.06em;max-width:250px;line-height:1.5;color:var(--muted)}
+body.moving #flight-keys{opacity:.5}
+body.hud-hidden #flight-keys{display:none}
+body.touch #flight-keys{display:none}
+/* the big CONTROLS legend is redundant with this + pause menu — hide it on small screens, keep on desktop */
+@media (max-width:900px){#legend{display:none}}
+
+#spawn-hint{position:absolute;left:50%;top:60%;transform:translateX(-50%);z-index:7;pointer-events:none;font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);background:rgba(4,10,14,.7);border:1px solid var(--amber);padding:8px 16px;transition:opacity .5s}
+#spawn-hint.hidden{opacity:0}
+
+#shop-buy{background:var(--amber);border-color:var(--amber);color:#04110a;font-weight:700}
+#shop-buy:hover{background:#ffca66}
+
+#boost-tip{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);z-index:7;pointer-events:none;font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.18em;text-transform:uppercase;color:#04110a;background:var(--green);padding:8px 18px;border-radius:6px;box-shadow:0 0 24px rgba(57,255,136,.4);transition:opacity .5s}
+#boost-tip.hidden{opacity:0}
+
+#night-tint{position:fixed;inset:0;background:#020610;opacity:0;pointer-events:none;z-index:1;transition:opacity 2s linear}
+
+/* ================= MOBILE / SMALL SCREENS ================= */
+#mobile-menu{display:none}
+@media (max-width:820px){
+  /* clear the play field: hide the desktop corner panels; keep game + touch controls */
+  #legend,#minimap-wrap,#missions-menu,#mp,#hunt-counters,#flight-keys,#teleport,#sponsor{display:none!important}
+  /* top row: title left, hamburger right — no overlap */
+  #title{top:8px!important;left:8px;padding:5px 8px}
+  .title-main{font-size:15px}.title-sub{display:none}
+  #home-btn{display:none}
+  #mobile-menu{display:inline-flex;align-items:center;justify-content:center;position:absolute;top:8px;right:8px;left:auto;transform:none;z-index:10;pointer-events:auto;width:44px;height:40px;font-size:20px;background:var(--panel);border:1px solid var(--line);color:var(--green);border-radius:6px}
+  /* compact status bar under the title: city-online + weather only */
+  #status{top:50px;left:8px;right:8px;min-width:0;max-width:none;font-size:11px;padding:5px 10px}
+  #status .row{justify-content:flex-start;gap:8px}
+  #status .row{display:none}
+  #status .wrow{display:flex}  /* keep only the WEATHER row on phone */
+  #mission,#mission-hint,#race-timer{display:none!important}  /* hidden on phone (in the ☰ menu instead) */
+  #race-timer{top:54px;font-size:12px;padding:4px 10px}
+  #motion-banner{font-size:12px;padding:6px 8px}
+  /* touch controls already sized; make sure buttons are reachable */
+  #touch-buttons{right:14px;bottom:14px}
+  #joy-base{left:24px;bottom:78px}
+  /* pause menu fits phone */
+  #pause-modal .overlay-box,#menu-modal .overlay-box,#shop-modal .overlay-box,#results-modal .overlay-box{max-width:94vw;padding:18px}
+  #pause-controls{font-size:11px;line-height:1.7}
+}
+
+/* ---- guided tour bar ---- */
+#tour-bar{position:absolute;left:50%;bottom:74px;transform:translateX(-50%);z-index:8;display:flex;gap:10px;align-items:center;
+  background:rgba(4,10,14,.9);border:1px solid var(--amber);border-radius:8px;padding:7px 12px;pointer-events:auto;max-width:calc(100% - 24px)}
+#tour-bar.hidden{display:none}
+#tour-label{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.08em;color:var(--amber);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tour-bar button{font-size:11px;padding:5px 10px;border-color:var(--amber);color:var(--amber)}
+#tour-bar button#tour-speed{min-width:42px}
+@media (max-width:820px){#tour-bar{bottom:74px;font-size:11px}#tour-label{font-size:11px}}
+
+/* hold-to-boost (touch flight): right side, above the bottom button row */
+#btn-boost{position:absolute;right:14px;bottom:74px;z-index:8;pointer-events:auto;display:none;
+  width:70px;height:52px;font-size:12px;font-weight:700;border-radius:8px;background:rgba(4,10,14,.85);
+  border:1px solid var(--amber);color:var(--amber);touch-action:none;user-select:none;-webkit-user-select:none}
+#btn-boost.active{background:var(--amber);color:#04110a}
+body.touch #btn-boost{display:inline-flex;align-items:center;justify-content:center}
+body.touch.tour-on #btn-boost{display:none}   /* hide while a tour is running */
+
+/* tour picker list */
+#tour-list{display:flex;flex-direction:column;gap:8px}
+#tour-list button{width:100%;text-align:left;padding:11px 14px;font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.06em}
+#tour-list button:hover{background:var(--green-dim);color:#02060a}
+/* contextual action button (mobile shop/jack) */
+#ctx-btn{position:absolute;left:50%;bottom:130px;transform:translateX(-50%);z-index:9;pointer-events:auto;
+  font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;
+  color:#04110a;background:var(--amber);border:none;padding:12px 22px;border-radius:8px;box-shadow:0 0 20px rgba(255,179,71,.4)}
+#ctx-btn.hidden{display:none}
+
+/* right-side BOOST joystick: hold to boost, drag to steer direction */
+#boost-stick{position:absolute;right:14px;bottom:78px;width:120px;height:120px;z-index:8;pointer-events:auto;touch-action:none;display:none}
+body.touch #boost-stick{display:block}
+body.touch.tour-on #boost-stick{display:none}
+#boost-base{position:absolute;right:0;bottom:0;width:120px;height:120px;border-radius:50%;border:2px solid var(--amber);background:rgba(4,10,14,.55);opacity:.85}
+#boost-knob{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:var(--amber);color:#04110a;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:11px;box-shadow:0 0 16px rgba(255,179,71,.6)}
+
+/* --- declutter: collapsible CONTROLS, hidden MP-soon panel, capped missions --- */
+#legend .legend-head{background:none;border:0;color:var(--amber);font-family:var(--display);letter-spacing:1px;font-size:12px;cursor:pointer;padding:0;display:flex;gap:8px;align-items:center;pointer-events:auto}
+#legend .legend-head .caret{transition:transform .15s ease;display:inline-block}
+#legend:not(.collapsed) .legend-head .caret{transform:rotate(90deg)}
+#legend.collapsed .row{display:none}
+#mp{display:none}                              /* multiplayer is COMING SOON — keep it off the HUD for now */
+/* scrollbar-gutter:stable reserves the scrollbar's column whether or not it is showing,
+   so rows keep the same width and the right-hand buttons stop sitting flush against the
+   thumb the moment the list grows past the panel. */
+/* 360px is not arbitrary: #btn-photo occupies the top-right to y60 and #teleport sits
+   at bottom:56px, so this is the whole gap. Raising it pushes the panel off-screen. */
+#missions-menu{max-height:calc(100vh - 360px);overflow-y:auto;scrollbar-gutter:stable}
+#missions-list{padding-right:2px}
+#missions-menu::-webkit-scrollbar{width:6px}
+#missions-menu::-webkit-scrollbar-thumb{background:rgba(57,255,136,.3);border-radius:3px}
+
+/* compact status rows so the left column (minimap + status + controls) fits */
+#status{font-size:11px;padding:7px 11px;line-height:1.25}
+#status .row{line-height:1.25;min-height:0}
+#status .status-line{margin-bottom:2px}
+
+/* ---- first-run welcome overlay (covers the initial tile load, gives direction) ---- */
+#welcome{z-index:30;background:radial-gradient(120% 120% at 50% 0%, rgba(6,14,20,.72), rgba(2,6,9,.92))}
+#welcome-box{max-width:520px;text-align:center;border:1px solid var(--green-dim);background:rgba(4,10,14,.9);box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 0 1px rgba(57,255,136,.08) inset;padding:30px 34px}
+.welcome-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.28em;color:var(--amber);text-transform:uppercase;margin-bottom:12px}
+.welcome-title{font-family:var(--display);font-weight:800;font-size:52px;line-height:1;color:var(--green);letter-spacing:2px;text-shadow:0 0 24px rgba(57,255,136,.45)}
+.welcome-title.has-city{font-size:26px;letter-spacing:4px;opacity:.8}
+.welcome-title-city{font-family:var(--display);font-weight:800;font-size:58px;line-height:1;color:var(--green);letter-spacing:2px;text-shadow:0 0 24px rgba(57,255,136,.45);margin-top:2px}
+.welcome-sub{font-family:var(--mono);font-size:13px;line-height:1.55;color:var(--muted);max-width:400px;margin:14px auto 22px}
+.welcome-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.welcome-primary{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:1px;padding:12px 22px;color:#04110a;background:var(--green);border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 20px rgba(57,255,136,.4);transition:transform .12s ease,box-shadow .12s ease}
+.welcome-primary:hover{transform:translateY(-1px);box-shadow:0 0 28px rgba(57,255,136,.6)}
+.welcome-secondary{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:1px;padding:12px 20px;color:var(--green);background:transparent;border:1px solid var(--green-dim);border-radius:8px;cursor:pointer}
+.welcome-secondary:hover{border-color:var(--green);background:rgba(57,255,136,.08)}
+.welcome-hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:20px;letter-spacing:.04em}
+.welcome-hint b{color:var(--green);font-weight:700}
+@media (max-width:820px){.welcome-title{font-size:40px}.welcome-title.has-city{font-size:20px;letter-spacing:3px}.welcome-title-city{font-size:44px}#welcome-box{padding:24px 20px;max-width:none;margin:0 14px}.welcome-actions{flex-direction:column}}
+
+/* shareable-photo button */
+#btn-photo{position:absolute;top:16px;right:16px;z-index:9;width:44px;height:44px;padding:0;font-size:20px;line-height:1;border:1px solid var(--green-dim);background:rgba(4,10,14,.7);border-radius:10px;cursor:pointer;pointer-events:auto;transition:transform .12s ease,border-color .12s ease}
+#btn-photo:hover{transform:translateY(-1px);border-color:var(--green)}
+#btn-photo:active{transform:scale(.94)}
+body.hud-hidden #btn-photo{display:none}
+@media (max-width:820px){#btn-photo{top:8px;right:60px;bottom:auto;width:40px;height:40px;font-size:18px}}
+
+/* ---- award screen + briefcase ---- */
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.award-box{position:relative;z-index:2;max-width:460px;text-align:center;border:1px solid var(--green-dim);background:rgba(4,10,14,.94);box-shadow:0 24px 70px rgba(0,0,0,.6),0 0 60px rgba(57,255,136,.12)}
+.award-ribbon{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--amber);text-transform:uppercase;margin-bottom:14px}
+.award-badge{width:132px;height:132px;margin:0 auto 14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:64px;background:radial-gradient(circle at 50% 38%, #0e2b1e, #061512);border:3px solid var(--award-color,#00754a);box-shadow:0 0 0 6px rgba(0,117,74,.18),0 0 40px var(--award-color,#00754a);animation:badgePop .7s cubic-bezier(.18,1.5,.4,1) both}
+@keyframes badgePop{0%{transform:scale(0) rotate(-30deg);opacity:0}60%{transform:scale(1.12) rotate(6deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.award-title{font-family:var(--display);font-weight:800;font-size:32px;letter-spacing:1px;color:var(--green);text-shadow:0 0 22px rgba(57,255,136,.5)}
+.award-blurb{font-family:var(--mono);font-size:13px;color:var(--muted);margin:8px auto 18px;max-width:340px;line-height:1.5}
+.award-email{background:rgba(57,255,136,.05);border:1px solid var(--green-dim);border-radius:10px;padding:14px;margin-bottom:16px}
+.award-email-label{font-family:var(--body);font-size:13px;color:var(--text);line-height:1.5;margin-bottom:10px}
+.award-email-label b{color:var(--amber)}
+.award-email-row{display:flex;gap:8px}
+.award-email-row input{flex:1;min-width:0;background:rgba(2,6,9,.8);border:1px solid var(--green-dim);color:var(--text);font-family:var(--mono);font-size:14px;padding:10px 12px;border-radius:7px}
+.award-email-row input:focus{outline:none;border-color:var(--green)}
+.award-email-row button{white-space:nowrap;font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.5px;color:#04110a;background:var(--green);border:none;border-radius:7px;padding:0 16px;cursor:pointer}
+.award-email-row button:hover{background:#6dffab}
+.award-email-msg{font-family:var(--mono);font-size:12px;margin-top:8px;min-height:16px;color:var(--green)}
+#briefcase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin:16px 0;max-height:52vh;overflow-y:auto}
+.bc-item{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 10px;text-align:center}
+.bc-item .bc-em{font-size:40px;line-height:1;filter:grayscale(1) opacity(.35)}
+.bc-item.earned{border-color:var(--award-color,var(--green-dim));box-shadow:0 0 22px rgba(57,255,136,.1)}
+.bc-item.earned .bc-em{filter:none}
+.bc-item .bc-name{font-family:var(--display);font-size:12px;letter-spacing:.5px;margin-top:8px;color:var(--muted)}
+.bc-item.earned .bc-name{color:var(--text)}
+.bc-item .bc-date{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px}
+@media (max-width:820px){.award-box,.briefcase-box{margin:0 14px}.award-email-row{flex-direction:column}.award-email-row button{padding:10px}}
+
+/* welcome launcher: mode grid + weekly drop */
+#welcome-box{max-width:560px}
+.welcome-modes{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:6px 0 16px}
+.wmode{display:flex;align-items:center;gap:10px;text-align:left;padding:11px 13px;background:rgba(57,255,136,.05);border:1px solid var(--green-dim);border-radius:9px;cursor:pointer;pointer-events:auto;transition:transform .1s ease,border-color .1s ease,background .1s ease;font-family:var(--body);color:var(--text)}
+.wmode:hover{transform:translateY(-1px);border-color:var(--green);background:rgba(57,255,136,.1)}
+.wmode .wm-em{font-size:22px;line-height:1;flex:0 0 auto}
+.wmode .wm-txt{display:flex;flex-direction:column;min-width:0}
+.wmode .wm-name{font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.4px;color:var(--green)}
+.wmode .wm-desc{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.welcome-drop{background:linear-gradient(180deg,rgba(255,179,71,.09),rgba(255,179,71,.03));border:1px solid rgba(255,179,71,.35);border-radius:10px;padding:13px 15px;margin-bottom:14px;text-align:left}
+.wd-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.wd-tag{font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:.6px;color:var(--amber)}
+.wd-when{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--amber);opacity:.8}
+.wd-text{font-family:var(--body);font-size:12.5px;line-height:1.5;color:var(--text);margin-bottom:10px}
+.wd-text b{color:var(--amber)}
+.wd-form{display:flex;gap:8px}
+.wd-form input{flex:1;min-width:0;background:rgba(2,6,9,.8);border:1px solid rgba(255,179,71,.4);color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 11px;border-radius:7px}
+.wd-form input:focus{outline:none;border-color:var(--amber)}
+.wd-form button{white-space:nowrap;font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.5px;color:#1a1204;background:var(--amber);border:none;border-radius:7px;padding:0 15px;cursor:pointer}
+.wd-form button:hover{background:#ffc76b}
+.wd-msg{font-family:var(--mono);font-size:11px;margin-top:7px;min-height:14px;color:var(--amber)}
+@media (max-width:820px){.welcome-modes{grid-template-columns:1fr}.wd-form{flex-direction:column}#welcome-box{max-width:none}}
+
+/* briefcase: clickable badges + spinning detail */
+.bc-item{cursor:pointer;font:inherit;transition:transform .12s ease,border-color .12s ease,background .12s ease}
+.bc-item:hover{transform:translateY(-2px);border-color:var(--award-color,var(--green));background:rgba(57,255,136,.06)}
+.bc-item:active{transform:scale(.97)}
+.bc-detail{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:10px 4px}
+.bc-big{width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:70px;background:radial-gradient(circle at 50% 38%,#0e2b1e,#061512);border:3px solid var(--award-color,var(--green-dim));margin-bottom:16px}
+.bc-big.spin{animation:bcSpin 3.6s linear infinite;box-shadow:0 0 0 6px rgba(57,255,136,.1),0 0 46px var(--award-color,var(--green))}
+.bc-big.locked{filter:grayscale(1);opacity:.45;border-color:var(--line)}
+@keyframes bcSpin{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
+.bc-big-name{font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:.6px;color:var(--green)}
+.bc-big-status{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--amber);margin-top:6px}
+.bc-big-blurb{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.55;max-width:330px;margin:10px auto 4px}
+.bc-run{font-family:var(--display);font-weight:700;letter-spacing:.5px;color:#04110a;background:var(--green);border:none;border-radius:7px;padding:10px 18px;cursor:pointer}
+.bc-run:hover{background:#6dffab}
+
+/* flight steering tip — shown while flying until the player locks the pointer */
+#steer-tip{position:absolute;left:50%;bottom:168px;transform:translateX(-50%);z-index:7;pointer-events:none;font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:#1a1204;background:var(--amber);padding:8px 18px;border-radius:6px;box-shadow:0 0 24px rgba(255,179,71,.45);transition:opacity .5s;white-space:nowrap}
+#steer-tip.hidden{opacity:0}
+body.touch #steer-tip{display:none}
+@media (max-width:820px){#steer-tip{display:none}}
+
+/* featured mode on the welcome launcher — spans the row, amber accent */
+.wmode.featured{grid-column:1/-1;background:linear-gradient(180deg,rgba(255,179,71,.14),rgba(255,179,71,.05));border-color:rgba(255,179,71,.55);padding:13px}
+.wmode.featured:hover{border-color:var(--amber);background:rgba(255,179,71,.17)}
+.wmode.featured .wm-em{font-size:26px}
+.wmode.featured .wm-name{color:var(--amber);font-size:15px}
+.wmode.featured .wm-desc{color:#d8c39a}
+
+/* start menu: cap height and scroll internally as modes are added */
+#welcome{align-items:flex-start;overflow-y:auto;padding:24px 0}
+#welcome-box{max-height:calc(100vh - 48px);overflow-y:auto;overscroll-behavior:contain;margin:auto}
+#welcome-box::-webkit-scrollbar{width:8px}
+#welcome-box::-webkit-scrollbar-track{background:rgba(57,255,136,.05);border-radius:4px}
+#welcome-box::-webkit-scrollbar-thumb{background:rgba(57,255,136,.35);border-radius:4px}
+#welcome-box::-webkit-scrollbar-thumb:hover{background:rgba(57,255,136,.55)}
+@media (max-width:820px){#welcome{padding:12px 0}#welcome-box{max-height:calc(100vh - 24px)}}
+
+/* run-count chip on a briefcase badge */
+.bc-item{position:relative}
+.bc-x{position:absolute;top:6px;right:7px;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.3px;color:#04110a;background:var(--award-color,var(--green));padding:1px 6px;border-radius:9px}
+
+/* boost stick pressed feedback */
+#boost-stick.active #boost-base{opacity:1;border-color:var(--green)}
+#boost-stick.active #boost-knob{background:var(--green);color:#04110a;box-shadow:0 0 22px rgba(57,255,136,.75)}
+
+/* ---- wayfinding: objective compass (all inputs) + compact minimap (touch) ---- */
+#nav-guide{position:absolute;left:50%;transform:translateX(-50%);top:calc(96px + var(--banner-h,0px));z-index:8;display:none;align-items:center;gap:9px;pointer-events:auto;
+  background:rgba(4,10,14,.86);border:1px solid var(--green-dim);border-radius:22px;padding:7px 14px;font-family:var(--mono);color:var(--text);max-width:calc(100vw - 32px)}
+#nav-guide:not(.hidden){display:flex}
+#nav-arrow{display:inline-block;font-size:19px;line-height:1;color:var(--green);text-shadow:0 0 10px rgba(57,255,136,.7);transition:transform .12s linear}
+#nav-guide .nav-txt{display:flex;flex-direction:column;min-width:0;text-align:left}
+#nav-name{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.4px;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44vw}
+#nav-dist{font-size:10px;color:var(--muted);letter-spacing:.1em}
+/* the MAP chip toggles the compact minimap, which is a touch-only affordance */
+#nav-map-hint{display:none}
+body.touch #nav-map-hint{display:inline-block}
+#nav-map-hint{font-size:9px;letter-spacing:.14em;color:var(--amber);border:1px solid rgba(255,179,71,.5);border-radius:5px;padding:2px 6px}
+/* compact minimap on phones, shown when toggled */
+body.touch #minimap-wrap{display:none}
+body.touch.mini-on #minimap-wrap{display:block;top:calc(140px + var(--banner-h,0px));left:50%;transform:translateX(-50%);padding:5px;z-index:8}
+body.touch.mini-on #minimap{width:190px;height:190px}
+body.touch.mini-on #minimap-zoom{right:4px;top:4px}
+
+#golf-card {
+  /* Left column, in the gap between #status (ends ~y548) and #flight-keys (bottom 17px).
+     NOT the right column: #missions-menu (y60-582) and #teleport (y462-826) own that
+     edge entirely, and an earlier top-right placement was completely hidden behind them. */
+  position: absolute; left: 16px; bottom: 210px; z-index: 6; pointer-events: none;
+  font-family: var(--mono); font-size: 12px; letter-spacing: .1em; color: var(--text);
+  background: rgba(4,10,14,.82); border: 1px solid var(--line); padding: 10px 14px; min-width: 150px;
+}
+#golf-card .club { font-family: var(--mono); font-weight: 700; font-size: 17px; color: var(--green); letter-spacing: .06em; }
+#golf-card .row { display: flex; justify-content: space-between; gap: 14px; }
+#golf-card .row b { color: var(--amber); font-weight: 600; }
+
+#derby-card {
+  /* Golf owns the lower-left (#golf-card above); this takes the upper-right
+     instead, below #btn-photo (top-right, to y60) and above where
+     #hunt-counters already sits (top:340) without conflict, so a HUD row
+     already lives on this edge. hud.js's setDerby builds each row as a bare
+     div containing span.k / span.v, and .k/.v are already styled globally by
+     #status's rules a few lines up — only the box and the row layout are new. */
+  position: absolute; right: 16px; top: calc(76px + var(--banner-h, 0px)); z-index: 6; pointer-events: none;
+  font-family: var(--mono); font-size: 12px; letter-spacing: .1em; color: var(--text);
+  background: rgba(4,10,14,.82); border: 1px solid var(--line); padding: 10px 14px; min-width: 150px;
+}
+#derby-card > div { display: flex; justify-content: space-between; gap: 14px; }
+#derby-card .v { color: var(--amber); font-weight: 600; }
+body.touch.mini-on #minimap-zoom button{width:26px;height:26px}
