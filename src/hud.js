@@ -183,7 +183,7 @@ export class HUD {
     el.target = '_blank';
     el.rel = 'noopener sponsored';
     img.src = cfg.image;
-    img.alt = cfg.alt || 'Advertisement';
+    img.alt = cfg.alt || '';
     if (cfg.w && cfg.h) {
       img.width = cfg.w; img.height = cfg.h;
       el.style.width = `min(${cfg.w}px, calc(100vw - 32px))`;

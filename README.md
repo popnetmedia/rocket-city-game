@@ -138,7 +138,10 @@ of Google tiles.** That is why the repo ships no screenshots.
   `src/tours.js`).
 - **Camera map and Ghost Run:** the DeFlock map of ALPR camera locations, and a stealth run
   across downtown without entering any camera's view cone (`src/alpr.js`, `src/ghostrun.js`).
-- **Golf, home run derby, enterable interiors, video screens and per-city characters.**
+- **Golf, home run derby, enterable interiors, video screens and per-city characters.** The golf
+  swing and ball flight work, but no course ships with hole data yet. `public/golf/holes.json` is
+  empty until someone maps a course's tees and greens from a source they can cite, such as
+  OpenStreetMap `golf=tee` and `golf=green` features.
 - **What's on:** ticketed events near the active city from the Ticketmaster Discovery API,
   behind a serverless proxy so the key stays on the server (`api/whats-on.js`). Without a key
   the menu row simply does not appear.

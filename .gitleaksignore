@@ -1,0 +1,2 @@
+# localStorage key name for saved awards, not a credential
+src/awards.js:generic-api-key:6

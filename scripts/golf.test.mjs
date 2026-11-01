@@ -113,22 +113,19 @@ console.log('flight: all assertions passed');
 import { readFileSync } from 'node:fs';
 
 const holes = JSON.parse(readFileSync(new URL('../public/golf/holes.json', import.meta.url)));
-const course = holes['rtj-hampton-cove'];
-assert.ok(course, 'RTJ Hampton Cove is the slice course');
-assert.ok(course.holes.length >= 3, 'at least the three slice holes');
-for (const h of course.holes) {
-  assert.ok(h.n >= 1 && h.n <= 18, `hole number ${h.n}`);
-  assert.ok(h.par >= 3 && h.par <= 5, `par ${h.par}`);
-  assert.ok(h.r > 4 && h.r < 40, `green radius ${h.r} m`);
-  for (const [lat, lon] of [h.tee, h.green]) {
-    assert.ok(lat > 34.5 && lat < 35.0, `lat ${lat} in region`);
-    assert.ok(lon > -87 && lon < -86.3, `lon ${lon} in region`);
+// No course ships with sourced hole data yet. Any course added must pass these checks.
+for (const [id, course] of Object.entries(holes)) {
+  assert.ok(course.holes.length >= 1, `${id} has holes`);
+  for (const h of course.holes) {
+    assert.ok(h.n >= 1 && h.n <= 18, `hole number ${h.n}`);
+    assert.ok(h.par >= 3 && h.par <= 5, `par ${h.par}`);
+    assert.ok(h.r > 4 && h.r < 40, `green radius ${h.r} m`);
+    // tee and green must actually be a hole apart
+    const d = Math.hypot((h.tee[0] - h.green[0]) * 111320, (h.tee[1] - h.green[1]) * 91600);
+    assert.ok(d > 80 && d < 600, `${id} hole ${h.n} plays ${Math.round(d)} m, implausible`);
   }
-  // tee and green must actually be a hole apart
-  const d = Math.hypot((h.tee[0] - h.green[0]) * 111320, (h.tee[1] - h.green[1]) * 91600);
-  assert.ok(d > 80 && d < 600, `hole ${h.n} plays ${Math.round(d)} m — implausible`);
 }
-console.log('holes: all assertions passed');
+console.log(`holes: ${Object.keys(holes).length} course(s) checked`);
 
 // rollout: driver carries ~232m but should roll 10-30m more; lob wedge rolls much less
 const drvShot = shot('driver');

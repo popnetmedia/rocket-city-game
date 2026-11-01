@@ -19,7 +19,6 @@ covered by that license; each keeps its own terms.
 | `public/osm/` | baked OpenStreetMap cells per city (`npm run bake:osm`) | © OpenStreetMap contributors, ODbL |
 | `public/alpr.json`, `public/alpr/` | ALPR camera locations per city | [DeFlock](https://deflock.me), derived from OpenStreetMap, ODbL |
 | `public/draco/` | Draco mesh decoder (Google 3D Tiles are Draco-compressed) | Google Draco, Apache License 2.0, as distributed with three.js |
-| `public/golf/holes.json` | tee and green positions for Robert Trent Jones Golf Trail, Hampton Cove | Source not recorded in the project history. Verify against OpenStreetMap `golf=*` features before relying on it. |
 | `public/interiors/` | enterable room layouts | authored for this project, MIT |
 | favicons, app icons, `site.webmanifest` | the rocket icon | designed for this project, MIT |
 

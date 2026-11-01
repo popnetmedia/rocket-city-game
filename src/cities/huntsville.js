@@ -269,8 +269,8 @@ export default {
       { name: 'Unity Psychiatric Care', lat: 34.75331, lon: -86.66528, addr: "5315 Millennium Drive Northwest" },
     ],
     // Golf courses (OSM Nominatim geocode, 2026-08). Used by the 'Find the Golf' mode.
-    // `id` keys into public/golf/holes.json for GOLF mode. Only the course whose id
-    // has an entry there is playable; the rest are still hunt/tour targets, and golf
+    // `id` keys into public/golf/holes.json for GOLF mode. A course is playable only
+    // once it has an entry there; the rest are still hunt/tour targets, and golf
     // mode says so rather than warping the player to a different course.
     golfCourses: [
       { id: 'huntsville-cc', name: 'Huntsville Country Club', lat: 34.74602, lon: -86.61606, addr: "2601 Golf Club Lane Northwest" },
